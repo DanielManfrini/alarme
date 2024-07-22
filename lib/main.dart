@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/cards/alarm_card.dart';
 import 'package:flutter_application_1/components/dialogs/new_alarm_dialog.dart';
+import 'package:flutter_application_1/enums/alarms_enum.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,9 +33,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Alarm> alarms = [
-    Alarm('Antibiótico', 'A cada 12 horas', true),
-    Alarm('Vitaminas', 'Diariamente às 8:00 AM', false),
-    Alarm('Exercícios', 'Diariamente às 7:00 AM', true),
+    Alarm('Antibiótico', '12', true, AlarmType.recorrente),
+    Alarm('Vitaminas', '8:00', false, AlarmType.diario),
+    Alarm('Exercícios', '14:00', true, AlarmType.diario),
   ];
 
   void _addAlarm(Alarm newAlarm) {
@@ -66,8 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
       return AlarmCard(
         id: alarm.id,
         title: alarm.title,
-        subTitle: alarm.subTitle,
+        time: alarm.time,
         status: alarm.status,
+        type: alarm.type,
         onCancelPressed: null,
         onDelayPressed: null,
         onStatusPressed: _inactiveAlarm,
@@ -80,8 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
       return AlarmCard(
         id: alarm.id,
         title: alarm.title,
-        subTitle: alarm.subTitle,
+        time: alarm.time,
         status: alarm.status,
+        type: alarm.type,
         onCancelPressed: null,
         onDelayPressed: null,
         onStatusPressed: _activeAlarm,

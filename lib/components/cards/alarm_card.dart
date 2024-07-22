@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/enums/alarms_enum.dart';
 
 class Alarm {
-  static int _idCounter = 0; // Contador estático para incrementar IDs
+  static int _idCounter = 0;
 
   final int id;
   String title;
-  String subTitle;
+  String time;
   bool status;
-
-  Alarm(this.title, this.subTitle, this.status) : id = _getNextId();
+  AlarmType type;
+  
+  Alarm(this.title, this.time, this.status, this.type) : id = _getNextId();
   static int _getNextId() {
     return _idCounter++;
   }
@@ -17,8 +19,9 @@ class Alarm {
 class AlarmCard extends StatelessWidget {
   final int id;
   final String title;
-  final String subTitle;
+  final String time;
   final bool status;
+  final AlarmType type;
   final VoidCallback? onCancelPressed;
   final VoidCallback? onDelayPressed;
   final void Function(int) onStatusPressed;
@@ -27,12 +30,20 @@ class AlarmCard extends StatelessWidget {
     super.key,
     required this.id,
     required this.title,
-    required this.subTitle,
+    required this.time,
     required this.status,
+    required this.type,
     this.onCancelPressed,
     this.onDelayPressed,
     required this.onStatusPressed,
   });
+
+  String _getTime(time){
+    if(type == AlarmType.diario){
+      return 'Diariamente às: $time';
+    }
+    return 'A cada $time horas';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +51,7 @@ class AlarmCard extends StatelessWidget {
       ListTile(
         leading: const Icon(Icons.alarm),
         title: Text(title),
-        subtitle: Text(subTitle),
+        subtitle: Text(_getTime(time)),
       ),
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
