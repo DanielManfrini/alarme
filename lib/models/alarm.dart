@@ -1,4 +1,5 @@
 import 'package:flutter_application_1/enums/alarms_enum.dart';
+import 'package:riverpod/riverpod.dart';
 
 class Alarm {
   int? id;
@@ -61,3 +62,5 @@ class Alarm {
     );
   }
 }
+
+final alarmListProvider = StateProvider<List<Alarm>>((ref) => []);

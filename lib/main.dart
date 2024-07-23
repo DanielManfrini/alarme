@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/cards/alarm_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_application_1/components/dialogs/new_alarm_dialog.dart';
 import 'package:flutter_application_1/database/alarm_database.dart';
 import 'package:flutter_application_1/models/alarm.dart';
-import 'package:path/path.dart';
+import 'package:flutter_application_1/screens/alarm_screen.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() async {
-  // Initialize FFI
-  sqfliteFfiInit();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
-  databaseFactory = databaseFactoryFfi;
-
-  runApp(const MyApp());
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -30,143 +29,46 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+
+class MyHomePage extends ConsumerStatefulWidget {
+
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  List<Alarm> alarms = [];
+class _MyHomePageState extends ConsumerState<MyHomePage> {
 
   @override
   void initState() {
-    super.initState();
-    _loadAlarms();
-  }
+    sqfliteFfiInit();
 
-  Future<void> _loadAlarms() async {
-    final dbAlarms = await AlarmDatabase.instance.readAllAlarms();
-    setState(() {
-      alarms = dbAlarms;
-    });
+    databaseFactory = databaseFactoryFfi;
+
+    super.initState();
   }
 
   void _addAlarm(Alarm newAlarm) async {
     newAlarm.createdIn = DateTime.now().toString();
 
-    setState(() {
-      alarms.add(newAlarm);
-    });
+    ref.read(alarmListProvider.notifier).update((state) => [...state, newAlarm]);
 
     await AlarmDatabase.instance.create(newAlarm);
   }
 
-  void _inactiveAlarm(int? id) async {
-    Alarm editedAlarm = alarms.where((alarm) => alarm.id == id).first;
-
-    editedAlarm.editedIn = DateTime.now().toString();
-    editedAlarm.active = false;
-
-    setState(() {
-      alarms.where((alarm) => alarm.id == id).first.active = editedAlarm.active;
-      alarms.where((alarm) => alarm.id == id).first.editedIn = editedAlarm.editedIn;
-    });
-
-    print(editedAlarm.toMap());
-
-    await AlarmDatabase.instance.update(editedAlarm);
-  }
-
-  void _activeAlarm(int? id) async {
-    Alarm editedAlarm = alarms.where((alarm) => alarm.id == id).first;
-
-    editedAlarm.editedIn = DateTime.now().toString();
-    editedAlarm.active = true;
-
-    setState(() {
-      alarms.where((alarm) => alarm.id == id).first.active = editedAlarm.active;
-      alarms.where((alarm) => alarm.id == id).first.editedIn = editedAlarm.editedIn;
-    });
-
-    await AlarmDatabase.instance.update(editedAlarm);
-  }
-
-  List<Widget> _buildActiveAlarmCards() {
-    return alarms.where((alarm) => alarm.active).map((alarm) {
-      return AlarmCard(
-        id: alarm.id,
-        title: alarm.name,
-        time: alarm.time,
-        status: alarm.active,
-        type: alarm.type,
-        onCancelPressed: null,
-        onDelayPressed: null,
-        onStatusPressed: _inactiveAlarm,
-      );
-    }).toList();
-  }
-
-  List<Widget> _buildInactiveAlarmCards() {
-    return alarms.where((alarm) => !alarm.active).map((alarm) {
-      return AlarmCard(
-        id: alarm.id,
-        title: alarm.name,
-        time: alarm.time,
-        status: alarm.active,
-        type: alarm.type,
-        onCancelPressed: null,
-        onDelayPressed: null,
-        onStatusPressed: _activeAlarm,
-      );
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 0, 78, 196),
         foregroundColor: const Color.fromARGB(255, 255, 255, 255),
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Card.filled(
-              elevation: 1,
-              child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                const ListTile(
-                  title: Text('Alarmes Ativos'),
-                ),
-                ListBody(
-                  children: <Widget>[
-                    Card(child: Column(children: _buildActiveAlarmCards())),
-                  ],
-                )
-              ]),
-            ),
-            const SizedBox(width: 45),
-            Card.filled(
-              elevation: 1,
-              child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                const ListTile(
-                  title: Text('Alarmes Inativos'),
-                ),
-                ListBody(
-                  children: <Widget>[
-                    Card(child: Column(children: _buildInactiveAlarmCards())),
-                  ],
-                )
-              ]),
-            ),
-          ],
-        ),
-      ),
+      body:const Center(child: AlarmScreen()),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color.fromARGB(255, 0, 78, 196),
         foregroundColor: const Color.fromARGB(255, 255, 255, 255),
@@ -186,58 +88,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// void _addAlarm(Alarm newAlarm) {
-//     setState(() {
-//       alarms.add(newAlarm);
-//     });
-//   }
+ // WidgetsFlutterBinding.ensureInitialized();
 
-//   void _inactiveAlarm(int id) {
-//     setState(() {
-//       alarms.where((alarm) => alarm.id == id).first.status = false;
-//     });
-//   }
+    // const AndroidInitializationSettings initializationSettingsAndroid =
+    //     AndroidInitializationSettings('@mipmap/ic_launcher');
 
-//   void _activeAlarm(int id) {
-//     setState(() {
-//       alarms.where((alarm) => alarm.id == id).first.status = true;
-//     });
-//   }
+    // const InitializationSettings initializationSettings =
+    //     InitializationSettings(android: initializationSettingsAndroid);
 
-//   void _removeAlarm(int index) {
-//     setState(() {
-//       alarms.removeAt(index);
-//     });
-//   }
+    // await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-// Container(
-//   padding: const EdgeInsets.all(16.0),
-//   child: Row(
-//     mainAxisAlignment: MainAxisAlignment.center,
-//     children: <Widget>[
-//       Expanded(
-//         child: Container(
-//           padding: const EdgeInsets.all(8.0),
-//           child: const TextField(
-//             decoration: InputDecoration(
-//               border: OutlineInputBorder(),
-//               labelText: 'Nome',
-//             ),
-//           ),
-//         ),
-//       ),
-//       const SizedBox(width: 16.0),
-//       Expanded(
-//         child: Container(
-//           padding: const EdgeInsets.all(8.0),
-//           child: const TextField(
-//             decoration: InputDecoration(
-//               border: OutlineInputBorder(),
-//               labelText: 'Sobrenome',
-//             ),
-//           ),
-//         ),
-//       ),
-//     ],
-//   ),
-// ),
+    // await AndroidAlarmManager.initialize();
