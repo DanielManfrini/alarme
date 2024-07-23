@@ -1,4 +1,4 @@
-enum AlarmType { diario, recorrente }
+enum AlarmType { diario, recorrente, desconhecido }
 
 extension AlarmTypeExtension on AlarmType {
   int get id {

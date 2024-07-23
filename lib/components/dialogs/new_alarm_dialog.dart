@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/cards/alarm_card.dart';
 import 'package:flutter_application_1/enums/alarms_enum.dart';
+import 'package:flutter_application_1/models/alarm.dart';
 
 class NewAlarmDialog extends StatefulWidget {
   final DateTime initialTime;
@@ -75,15 +75,15 @@ class _NewAlarmDialogState extends State<NewAlarmDialog> {
         ),
         TextButton(
           onPressed: () {
-            String title = _titleController.text;
+            String name = _titleController.text;
             String time = _selectedTime.format(context);
             AlarmType type = AlarmType.diario;
             
             Alarm newAlarm = Alarm(
-              title,
-              time,
-              true,
-              type,
+              name: name,
+              time: time,
+              active: true,
+              type: type,
             );
             
             widget.onSave(newAlarm);

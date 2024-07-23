@@ -1,34 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/enums/alarms_enum.dart';
 
-class Alarm {
-  static int _idCounter = 0;
-
-  final int id;
-  String title;
-  String time;
-  bool status;
-  AlarmType type;
-  
-  Alarm(this.title, this.time, this.status, this.type) : id = _getNextId();
-  static int _getNextId() {
-    return _idCounter++;
-  }
-}
-
 class AlarmCard extends StatelessWidget {
-  final int id;
+  final int? id;
   final String title;
   final String time;
   final bool status;
   final AlarmType type;
   final VoidCallback? onCancelPressed;
   final VoidCallback? onDelayPressed;
-  final void Function(int) onStatusPressed;
+  final void Function(int?) onStatusPressed;
 
   const AlarmCard({
     super.key,
-    required this.id,
+    this.id,
     required this.title,
     required this.time,
     required this.status,

@@ -1,4 +1,4 @@
-import 'package:flutter_application_1/components/cards/alarm_card.dart';
+import 'package:flutter_application_1/models/alarm.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -24,18 +24,15 @@ class AlarmDatabase {
   }
 
   Future _createDB(Database db, int version) async {
-    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const textType = 'TEXT NOT NULL';
-    const boolType = 'BOOLEAN NOT NULL';
-    const intType = 'INTEGER NOT NULL';
-
     await db.execute('''
-    CREATE TABLE alarms ( 
-      id $idType, 
-      title $textType,
-      subTitle $textType,
-      status $boolType,
-      type $intType
+    CREATE TABLE Alarms (
+      Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Time TEXT NOT NULL,
+      Active INTEGER NOT NULL,
+      "Type" INTEGER NOT NULL,
+      CreatedIn TEXT,
+      EditedIn TEXT
     )
     ''');
   }
@@ -44,7 +41,8 @@ class AlarmDatabase {
     final db = await instance.database;
 
     final id = await db.insert('alarms', alarm.toMap());
-    return alarm.copy(id: id);
+
+    return alarm.copyWith(id: id);
   }
 
   Future<Alarm?> readAlarm(int id) async {
@@ -52,7 +50,7 @@ class AlarmDatabase {
 
     final maps = await db.query(
       'alarms',
-      columns: ['id', 'title', 'subTitle', 'status', 'type'],
+      columns: ['Id', 'Name', 'Time', 'Active', "Type", 'CreatedIn', 'EditedIn'],
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -83,15 +81,15 @@ class AlarmDatabase {
     );
   }
 
-  Future<int> delete(int id) async {
-    final db = await instance.database;
+  // // Future<int> delete(int id) async {
+  //   final db = await instance.database;
 
-    return await db.delete(
-      'alarms',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  //   return await db.delete(
+  //     'alarms',
+  //     where: 'id = ?',
+  //     whereArgs: [id],
+  //   );
+  // }
 
   Future close() async {
     final db = await instance.database;
