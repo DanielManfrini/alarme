@@ -1,4 +1,5 @@
 import 'package:flutter_application_1/models/alarm.dart';
+import 'package:flutter_application_1/models/types.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -32,8 +33,21 @@ class AlarmDatabase {
       Active INTEGER NOT NULL,
       "Type" INTEGER NOT NULL,
       CreatedIn TEXT,
-      EditedIn TEXT
+      EditedIn TEXT,
+      LastPlay TEXT,
+      StartIn TEXT
     )
+    ''');
+    await db.execute('''
+    CREATE TABLE Types (
+      Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL
+    );
+    ''');
+    await db.execute('''
+    INSERT INTO Types
+      (Id, Name)
+      VALUES(1, 'diario'),(2, 'recorrente');
     ''');
   }
 
@@ -50,7 +64,17 @@ class AlarmDatabase {
 
     final maps = await db.query(
       'alarms',
-      columns: ['Id', 'Name', 'Time', 'Active', "Type", 'CreatedIn', 'EditedIn'],
+      columns: [
+        'Id',
+        'Name',
+        'Time',
+        'Active',
+        "Type",
+        'CreatedIn',
+        'EditedIn',
+        'LastPlay'
+            'StartIn'
+      ],
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -81,15 +105,23 @@ class AlarmDatabase {
     );
   }
 
-  // // Future<int> delete(int id) async {
-  //   final db = await instance.database;
+  Future<int> delete(int id) async {
+    final db = await instance.database;
 
-  //   return await db.delete(
-  //     'alarms',
-  //     where: 'id = ?',
-  //     whereArgs: [id],
-  //   );
-  // }
+    return await db.delete(
+      'alarms',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<TypeModel>> getTypes() async {
+    final db = await instance.database;
+
+    final result = await db.query('types');
+
+    return result.map((json) => TypeModel.fromMap(json)).toList();
+  }
 
   Future close() async {
     final db = await instance.database;

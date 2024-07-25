@@ -9,6 +9,8 @@ class Alarm {
   AlarmType type;
   String? createdIn;
   String? editedIn;
+  String? lastPlay;
+  String? startIn;
 
   Alarm(
       {this.id,
@@ -17,7 +19,9 @@ class Alarm {
       required this.active,
       required this.type,
       this.createdIn,
-      this.editedIn});
+      this.editedIn,
+      this.lastPlay,
+      this.startIn});
 
   Map<String, dynamic> toMap() {
     return {
@@ -28,6 +32,7 @@ class Alarm {
       'Type': type.index,
       'CreatedIn': createdIn,
       'EditedIn': editedIn,
+      'StartIn': startIn,
     };
   }
 
@@ -40,6 +45,8 @@ class Alarm {
       type: AlarmType.values[map['Type']],
       createdIn: map['CreatedIn'],
       editedIn: map['EditedIn'],
+      lastPlay: map['LastPlay'],
+      startIn: map['StartIn'],
     );
   }
 
@@ -50,7 +57,9 @@ class Alarm {
       bool? active,
       AlarmType? type,
       String? createdIn,
-      String? editedIn}) {
+      String? editedIn,
+      String? lastPlay,
+      String? startIn}) {
     return Alarm(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -59,6 +68,8 @@ class Alarm {
       type: type ?? this.type,
       createdIn: createdIn ?? this.createdIn,
       editedIn: editedIn ?? this.editedIn,
+      lastPlay: lastPlay ?? this.lastPlay,
+      startIn: startIn ?? this.startIn,
     );
   }
 }

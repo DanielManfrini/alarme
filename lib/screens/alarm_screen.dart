@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/cards/alarm_card.dart';
+import 'package:flutter_application_1/widgets/cards/alarm_card.dart';
 import 'package:flutter_application_1/database/alarm_database.dart';
 import 'package:flutter_application_1/models/alarm.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,9 +58,9 @@ class _AlarmScreenState extends ConsumerState<AlarmScreen> {
     await AlarmDatabase.instance.update(editedAlarm);
   }
 
-  List<Widget> _buildActiveAlarmCards() {
+  List<Widget> _buildAlarmCards() {
     final alarms = ref.watch(alarmListProvider);
-    return alarms.where((alarm) => alarm.active).map((alarm) {
+    return alarms.map((alarm) {
       return AlarmCard(
         id: alarm.id,
         title: alarm.name,
@@ -69,25 +69,22 @@ class _AlarmScreenState extends ConsumerState<AlarmScreen> {
         type: alarm.type,
         onCancelPressed: null,
         onDelayPressed: null,
-        onStatusPressed: _inactiveAlarm,
+        onStatusPressed: alarm.active ? _inactiveAlarm : _activeAlarm,
+        onDeletePressed: _deleteAlarm,
       );
     }).toList();
   }
 
-  List<Widget> _buildInactiveAlarmCards() {
+  void _deleteAlarm(int? id) async {
     final alarms = ref.watch(alarmListProvider);
-    return alarms.where((alarm) => !alarm.active).map((alarm) {
-      return AlarmCard(
-        id: alarm.id,
-        title: alarm.name,
-        time: alarm.time,
-        status: alarm.active,
-        type: alarm.type,
-        onCancelPressed: null,
-        onDelayPressed: null,
-        onStatusPressed: _activeAlarm,
-      );
-    }).toList();
+
+    Alarm editedAlarm = alarms.where((alarm) => alarm.id == id).first;
+
+    ref.read(alarmListProvider.notifier).update((state) {
+      return state.where((alarm) => alarm.id != id).toList();
+    });
+
+    await AlarmDatabase.instance.delete(editedAlarm.id ?? 0);
   }
 
   @override
@@ -95,32 +92,17 @@ class _AlarmScreenState extends ConsumerState<AlarmScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Card.filled(
-          elevation: 1,
-          child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-            const ListTile(
-              title: Text('Alarmes Ativos'),
-            ),
-            ListBody(
-              children: <Widget>[
-                Card(child: Column(children: _buildActiveAlarmCards())),
-              ],
-            )
-          ]),
-        ),
-        const SizedBox(width: 45),
-        Card.filled(
-          elevation: 1,
-          child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-            const ListTile(
-              title: Text('Alarmes Inativos'),
-            ),
-            ListBody(
-              children: <Widget>[
-                Card(child: Column(children: _buildInactiveAlarmCards())),
-              ],
-            )
-          ]),
+        Expanded(
+          child: Card.filled(
+            elevation: 1,
+            child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+              Expanded(
+                child: Card(
+                    child: SingleChildScrollView(
+                        child: Column(children: _buildAlarmCards()))),
+              ),
+            ]),
+          ),
         ),
       ],
     );
